@@ -8,6 +8,8 @@
     ],
     "require": {},
     "autoload": {
-        "psr-4": { "PhpMonAe\\" : "lib/" }
+        "psr-0": {
+            "PhpMonAe\\": "lib/"
+        }
     }
 }
