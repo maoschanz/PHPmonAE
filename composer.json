@@ -1,0 +1,13 @@
+{
+    "name": "versgui/php-mon-ae",
+    "authors": [
+        {
+            "name": "Guillaume Verstraete",
+            "email": "guillaume@versgui.fr"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": { "PhpMonAe\\" : "lib/" }
+    }
+}

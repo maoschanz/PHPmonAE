@@ -1,7 +1,10 @@
 <?php
-class MonaeException extends Exception { }
 
-class MonAE
+namespace PhpMonAe;
+
+use PhpMonAE\MonAeException;
+
+class MonAe
 {
 	private $_nameApp;
 	private $_email;
@@ -30,7 +33,7 @@ class MonAE
 	 */
 	private function set_firmid($_firmid)
 	{
-		if(!$_firmid) { throw new MonaeException('Le firm id est obligatoire.'); }
+		if(!$_firmid) { throw new MonAeException('Le firm id est obligatoire.'); }
 		$this->_firmid = $_firmid;
 	}
 	
@@ -197,9 +200,16 @@ class MonAE
 	 * @param array $options
 	 * 
 	 */
-	public function newQuote($options = array())
+	public function newQuote($options = array(), $draft = false)
 	{
-		return $this->newItem("quote","quotes", $options);
+        if( $draft ) {
+            $plural = 'quotes?type_doc=draft';
+        }
+        else {
+            $plural = 'quotes';
+        }
+
+		return $this->newItem("quote", $plural, $options);
 	}
 	
 	/**
