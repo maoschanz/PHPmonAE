@@ -207,15 +207,9 @@ class MonAe
      * @param array $options
      *
      */
-    public function newQuote($options = array(), $draft = false)
+    public function newQuote($options = array())
     {
-        if ($draft) {
-            $plural = 'quotes?type_doc=draft';
-        } else {
-            $plural = 'quotes';
-        }
-
-        return $this->newItem("quote", $plural, $options);
+        return $this->newItem('quote', 'quotes', $options);
     }
 
     /**
@@ -278,9 +272,15 @@ class MonAe
      * @param array $options
      *
      */
-    public function newInvoice($options = array())
+    public function newInvoice($options = array(), $draft = false)
     {
-        return $this->newItem("invoice", "invoices", $options);
+        if ($draft) {
+            $parameters = array('type_doc' => 'draft');
+        } else {
+            $parameters = array();
+        }
+
+        return $this->newItem("invoice", "invoices", $options, $parameters);
     }
 
     /**
@@ -468,8 +468,8 @@ class MonAe
         curl_setopt($curl, CURLOPT_URL, "https://www.facturation.pro/firms/" . $this->_firmid . "/" . $name . ".json" . $url);
         curl_setopt($curl, CURLOPT_USERPWD, $this->_login . ":" . $this->_password);
         curl_setopt($curl, CURLOPT_USERAGENT, 'User-Agent: ' . $this->_nameApp . ' (' . $this->_email . ')');
-        curl_setopt($curl, CURLOPT_SSLVERSION, 3);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_COOKIESESSION, true);
         curl_setopt($curl, CURLOPT_HEADER, true);
@@ -490,7 +490,6 @@ class MonAe
         curl_setopt($curl, CURLOPT_URL, "https://www.facturation.pro/firms/" . $this->_firmid . "/" . $name . "/" . $_ID . ".json");
         curl_setopt($curl, CURLOPT_USERPWD, $this->_login . ":" . $this->_password);
         curl_setopt($curl, CURLOPT_USERAGENT, 'User-Agent: ' . $this->_nameApp . ' (' . $this->_email . ')');
-        curl_setopt($curl, CURLOPT_SSLVERSION, 3);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_COOKIESESSION, true);
@@ -512,7 +511,6 @@ class MonAe
         curl_setopt($curl, CURLOPT_URL, "https://www.facturation.pro/firms/" . $this->_firmid . "/" . $name . "/" . $_ID . ".pdf");
         curl_setopt($curl, CURLOPT_USERPWD, $this->_login . ":" . $this->_password);
         curl_setopt($curl, CURLOPT_USERAGENT, 'User-Agent: ' . $this->_nameApp . ' (' . $this->_email . ')');
-        curl_setopt($curl, CURLOPT_SSLVERSION, 3);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_COOKIESESSION, true);
@@ -524,19 +522,20 @@ class MonAe
         return $return;
     }
 
-    private function newItem($name, $plurial, $options = array())
+    private function newItem($name, $plurial, $options = array(), $parameters = array())
     {
         $creation = json_encode($options);
 
+        $param = $this->parseParameters($parameters);
+
         $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, 'https://www.facturation.pro/firms/' . $this->_firmid . '/' . $plurial . '.json');
+        curl_setopt($curl, CURLOPT_URL, 'https://www.facturation.pro/firms/' . $this->_firmid . '/' . $plurial . '.json'. $param);
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $creation);
         curl_setopt($curl, CURLOPT_USERPWD, $this->_login . ":" . $this->_password);
         curl_setopt($curl, CURLOPT_USERAGENT, 'User-Agent: ' . $this->_nameApp . ' (' . $this->_email . ')');
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_COOKIESESSION, true);
-        curl_setopt($curl, CURLOPT_SSLVERSION, 3);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type: application/json"));
         curl_setopt($curl, CURLOPT_HEADER, true);
@@ -559,7 +558,6 @@ class MonAe
 
         curl_setopt($curl, CURLOPT_USERPWD, $this->_login . ":" . $this->_password);
         curl_setopt($curl, CURLOPT_USERAGENT, 'User-Agent: ' . $this->_nameApp . ' (' . $this->_email . ')');
-        curl_setopt($curl, CURLOPT_SSLVERSION, 3);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_COOKIESESSION, true);
@@ -575,9 +573,9 @@ class MonAe
 
     private function getOutput($return)
     {
-        $response = null;
+        $response = new \stdClass();
 
-        $return = split("\n", $return);
+        $return = explode("\n", $return);
         $json_resp = end($return);
         $status = "";
         foreach ($return as $key => $value) {
@@ -591,18 +589,35 @@ class MonAe
         $message = end($status);
 
         //gestion des erreurs
-        $response->error->code_error = $code;
+        if ($code >= 400) {
+            $response->error = new \stdClass();
 
-        if ($code < 400) {
-            $response->error->is_error = false;
-        } else {
             $response->error->is_error = true;
+            $response->error->code_error = $code;
             $response->error->message = $message;
         }
 
         $response->response = json_decode($json_resp);
 
         return $response;
+    }
+
+    private function parseParameters($parameters) {
+
+        $param_string = '';
+
+        foreach( $parameters as $key => $value ) {
+            if( $param_string == '' ) {
+                $param_string .= '?';
+            }
+            else {
+                $param_string .= '&';
+            }
+
+            $param_string .= $key .'='. $value;
+        }
+
+        return $param_string;
     }
 }
 
