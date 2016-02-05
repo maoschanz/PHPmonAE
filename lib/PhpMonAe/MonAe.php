@@ -192,7 +192,7 @@ class MonAe
      */
     public function getQuotePDF($_ID, $afficher = false)
     {
-        $return = getPDF("quotes", $_ID);
+        $return = $this->getPDF("quotes", $_ID);
         if ($afficher) {
             header("Content-type: application/pdf");
             echo $return;
@@ -256,7 +256,7 @@ class MonAe
      */
     public function getInvoicePDF($_ID, $afficher = false)
     {
-        $return = getPDF("invoices", $_ID);
+        $return = $this->getPDF("invoices", $_ID);
         if ($afficher) {
             header("Content-type: application/pdf");
             echo $return;
@@ -475,9 +475,19 @@ class MonAe
         curl_setopt($curl, CURLOPT_HEADER, true);
 
         $return = curl_exec($curl);
+        $info = curl_getinfo($curl);
+
         curl_close($curl);
 
-        return $this->getOutput($return);
+        $curlHeader = substr($return, 0, $info['header_size']);
+
+        preg_match('/X-Pagination: (.*)/i', $curlHeader, $preg);
+        $pagination = null;
+        if( $preg > 0 ) {
+            $pagination = $preg[1];
+        }
+
+        return $this->getOutput($return, $pagination);
     }
 
     private function getUnique($name, $_ID)
@@ -571,7 +581,7 @@ class MonAe
         return $this->getOutput($return);
     }
 
-    private function getOutput($return)
+    private function getOutput($return, $pagination = null)
     {
         $response = new \stdClass();
 
@@ -598,6 +608,10 @@ class MonAe
         }
 
         $response->response = json_decode($json_resp);
+
+        if ($pagination) {
+            $response->pagination = json_decode($pagination);
+        }
 
         return $response;
     }
