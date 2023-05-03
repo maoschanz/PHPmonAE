@@ -2,8 +2,6 @@
 
 namespace PhpMonAe;
 
-use PhpMonAE\MonAeException;
-
 class MonAe
 {
     private $_nameApp;
@@ -14,8 +12,6 @@ class MonAe
 
     /*
      * Constructeur
-     *
-     *
      */
     public function __construct($_email, $_firmid, $_login, $_password, $_nameApp = 'MonAE app')
     {
@@ -47,7 +43,7 @@ class MonAe
     private function set_login($_login)
     {
         if (!$_login) {
-            throw new MonaeException('Le login est obligatoire.');
+            throw new MonAeException('Le login est obligatoire.');
         }
         $this->_login = $_login;
     }
@@ -60,7 +56,7 @@ class MonAe
     private function set_password($_password)
     {
         if (!$_password) {
-            throw new MonaeException('La mot de passe est obligatoire.');
+            throw new MonAeException('Le mot de passe est obligatoire.');
         }
         $this->_password = $_password;
     }
@@ -73,7 +69,7 @@ class MonAe
     private function set_email($_email)
     {
         if (!$_email) {
-            throw new MonaeException('L\'email est obligatoire.');
+            throw new MonAeException('L\'email est obligatoire.');
         }
         $this->_email = $_email;
     }
@@ -86,7 +82,7 @@ class MonAe
     private function set_nameApp($_nameApp)
     {
         if (!$_nameApp) {
-            throw new MonaeException('Le nom de l\'application est obligatoire.');
+            throw new MonAeException('Le nom de l\'application est obligatoire.');
         }
         $this->_nameApp = $_nameApp;
     }
@@ -493,7 +489,7 @@ class MonAe
     private function getUnique($name, $_ID)
     {
         if (!$_ID) {
-            throw new MonaeException("Vous avez oublié l'ID !");
+            throw new MonAeException("Vous avez oublié l'ID !");
         }
 
         $curl = curl_init();
@@ -514,7 +510,7 @@ class MonAe
     private function getPDF($name, $_ID)
     {
         if (!$_ID) {
-            throw new MonaeException("Vous avez oublié l'ID !");
+            throw new MonAeException("Vous avez oublié l'ID !");
         }
 
         $curl = curl_init();
@@ -558,7 +554,7 @@ class MonAe
     private function updateItem($name, $_ID, $options = array())
     {
         if (!$_ID) {
-            throw new MonaeException("Vous avez oublié l'ID !");
+            throw new MonAeException("Vous avez oublié l'ID !");
         }
 
         $creation = json_encode($options);

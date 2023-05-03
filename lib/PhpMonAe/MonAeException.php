@@ -7,7 +7,7 @@
 
 namespace PhpMonAE;
  
-class MonAEException extends \Exception {
+class MonAeException extends \Exception {
 
 }
  
