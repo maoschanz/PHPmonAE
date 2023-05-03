@@ -6,7 +6,10 @@
             "email": "guillaume@versgui.fr"
         }
     ],
-    "require": {},
+    "require": {
+      "ext-curl": "*",
+      "ext-json": "*"
+    },
     "autoload": {
         "psr-0": {
             "PhpMonAe\\": "lib/"
